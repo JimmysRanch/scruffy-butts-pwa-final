@@ -14,7 +14,7 @@
     "react-dom": "18.3.1",
     "@supabase/supabase-js": "2.45.4",
     "stripe": "16.7.0",
-    "web-push": "3.5.3",
+    "web-push": "3.6.7",
     "nodemailer": "6.9.11"
   },
   "devDependencies": {
