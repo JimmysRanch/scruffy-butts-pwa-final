@@ -1,8 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    typedRoutes: true
-  }
-}
+    typedRoutes: true,
+  },
 
-export default nextConfig
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/book',
+        permanent: true,
+      },
+    ];
+  },
+};
+
+export default nextConfig;
