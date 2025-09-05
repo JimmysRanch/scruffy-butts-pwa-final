@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// === Supabase (your project) ===
 const SUPABASE_URL = 'https://tzbybtluhzntfhjexptw.supabase.co';
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YnlidGx1aHpudGZoamV4cHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MTkxNzIsImV4cCI6MjA3MTk5NTE3Mn0.E-2Y9CupjktT67UwkCP3Bm7-cBDmkolk2RIo_sPyRHQ';
@@ -39,14 +38,13 @@ export default function AppointmentForm() {
     setErr(null);
 
     try {
-      // 1) create the booking row
       const { data: booking, error: bErr } = await supa
         .from('bookings')
         .insert({
-          when_date: form.date,          // e.g. "2025-09-05"
-          when_time: form.time,          // e.g. "14:00"
-          owner_name: form.ownerName,    // text
-          status: 'booked',              // optional; ok if column exists
+          when_date: form.date,
+          when_time: form.time,
+          owner_name: form.ownerName,
+          status: 'booked',
         })
         .select('id')
         .single();
@@ -54,17 +52,14 @@ export default function AppointmentForm() {
       if (bErr) throw bErr;
       if (!booking?.id) throw new Error('No booking id returned');
 
-      // 2) link the dog to that booking
       const { error: dErr } = await supa.from('booking_dogs').insert({
         booking_id: booking.id,
         dog_name: form.petName,
         size: form.size || 'Medium',
       });
-
       if (dErr) throw dErr;
 
       setOk('Request received! We’ll confirm shortly.');
-      // clear only fields users re-enter every time
       setForm({ ...form, petName: '', notes: '', time: '', date: '' });
     } catch (e: any) {
       setErr(e?.message || 'Something went wrong saving your request.');
@@ -82,57 +77,28 @@ export default function AppointmentForm() {
 
       <label className="grid gap-1">
         <span>Your name</span>
-        <input
-          name="ownerName"
-          value={form.ownerName}
-          onChange={change}
-          required
-          className="border rounded-md p-2"
-          placeholder="Jane Doe"
-        />
+        <input name="ownerName" value={form.ownerName} onChange={change} required className="border rounded-md p-2" />
       </label>
 
       <label className="grid gap-1">
         <span>Phone</span>
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={change}
-          className="border rounded-md p-2"
-          placeholder="(555) 123-4567"
-        />
+        <input name="phone" value={form.phone} onChange={change} className="border rounded-md p-2" />
       </label>
 
       <label className="grid gap-1">
         <span>Email</span>
-        <input
-          type="email"
-          name="email"
-          value={form.email}
-          onChange={change}
-          className="border rounded-md p-2"
-          placeholder="you@example.com"
-        />
+        <input type="email" name="email" value={form.email} onChange={change} className="border rounded-md p-2" />
       </label>
 
       <label className="grid gap-1">
         <span>Pet name</span>
-        <input
-          name="petName"
-          value={form.petName}
-          onChange={change}
-          required
-          className="border rounded-md p-2"
-          placeholder="Buddy"
-        />
+        <input name="petName" value={form.petName} onChange={change} required className="border rounded-md p-2" />
       </label>
 
       <label className="grid gap-1">
         <span>Size</span>
         <select name="size" value={form.size} onChange={change} className="border rounded-md p-2">
-          <option>Small</option>
-          <option>Medium</option>
-          <option>Large</option>
+          <option>Small</option><option>Medium</option><option>Large</option>
         </select>
       </label>
 
@@ -149,21 +115,10 @@ export default function AppointmentForm() {
 
       <label className="grid gap-1">
         <span>Notes</span>
-        <textarea
-          name="notes"
-          value={form.notes}
-          onChange={change}
-          className="border rounded-md p-2"
-          rows={3}
-          placeholder="Anything we should know?"
-        />
+        <textarea name="notes" value={form.notes} onChange={change} className="border rounded-md p-2" rows={3} />
       </label>
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded-md bg-black text-white px-4 py-2 disabled:opacity-60"
-      >
+      <button type="submit" disabled={submitting} className="rounded-md bg-black text-white px-4 py-2 disabled:opacity-60">
         {submitting ? 'Sending…' : 'Request Booking'}
       </button>
     </form>
