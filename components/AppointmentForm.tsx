@@ -9,7 +9,7 @@ const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YnlidGx1aHpudGZoamV4cHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MTkxNzIsImV4cCI6MjA3MTk5NTE3Mn0.E-2Y9CupjktT67UwkCP3Bm7-cBDmkolk2RIo_sPyRHQ';
 const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// === service prices (match your business) ===
+// === service prices (adjust to match your business) ===
 const SERVICE_PRICES: Record<string, number> = {
   'Bath & Brush': 35,
   'Full Groom (Small)': 65,
@@ -47,10 +47,13 @@ export default function AppointmentForm() {
     setErr(null);
 
     try {
-      // calculate grand total
-      const price = SERVICE_PRICES[form.service] || 0;
+      // calculate totals
+      const subtotal = SERVICE_PRICES[form.service] || 0;
+      const tax = Math.round(subtotal * 0.0825 * 100) / 100; // example: 8.25% tax
+      const tips = 0; // default, could add input later
+      const grandTotal = subtotal + tax + tips;
 
-      // 1) write to bookings
+      // 1) insert into bookings
       const { data: booking, error: bErr } = await supa
         .from('bookings')
         .insert({
@@ -60,7 +63,10 @@ export default function AppointmentForm() {
           phone: form.phone,
           status: 'booked',
           notes: form.notes?.slice(0, 300) || null,
-          grand_total: price,
+          subtotal,
+          tax,
+          tips,
+          grand_total: grandTotal,
         })
         .select('id')
         .single();
@@ -68,14 +74,14 @@ export default function AppointmentForm() {
       if (bErr) throw bErr;
       const bookingId = booking.id;
 
-      // 2) write the dog linked to booking
+      // 2) insert dog row(s)
       const { error: dErr } = await supa.from('booking_dogs').insert({
         booking_id: bookingId,
         dog_name: form.petName || 'Dog',
         size: form.size || null,
         service: form.service || null,
         addons: {}, // optional jsonb
-        subtotal: price,
+        subtotal,
       });
 
       if (dErr) throw dErr;
