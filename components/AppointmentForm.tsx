@@ -9,6 +9,14 @@ const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6YnlidGx1aHpudGZoamV4cHR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MTkxNzIsImV4cCI6MjA3MTk5NTE3Mn0.E-2Y9CupjktT67UwkCP3Bm7-cBDmkolk2RIo_sPyRHQ';
 const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// === service prices (match your business) ===
+const SERVICE_PRICES: Record<string, number> = {
+  'Bath & Brush': 35,
+  'Full Groom (Small)': 65,
+  'Full Groom (Medium)': 85,
+  'Deshedding Add-on': 20,
+};
+
 export default function AppointmentForm() {
   const [form, setForm] = useState({
     ownerName: '',
@@ -39,6 +47,9 @@ export default function AppointmentForm() {
     setErr(null);
 
     try {
+      // calculate grand total
+      const price = SERVICE_PRICES[form.service] || 0;
+
       // 1) write to bookings
       const { data: booking, error: bErr } = await supa
         .from('bookings')
@@ -49,7 +60,7 @@ export default function AppointmentForm() {
           phone: form.phone,
           status: 'booked',
           notes: form.notes?.slice(0, 300) || null,
-          grand_total: 0, // placeholder until you calculate real totals
+          grand_total: price,
         })
         .select('id')
         .single();
@@ -64,7 +75,7 @@ export default function AppointmentForm() {
         size: form.size || null,
         service: form.service || null,
         addons: {}, // optional jsonb
-        subtotal: null, // optional numeric
+        subtotal: price,
       });
 
       if (dErr) throw dErr;
